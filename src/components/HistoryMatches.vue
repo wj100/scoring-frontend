@@ -18,24 +18,27 @@
       style="width: 100%; margin-bottom: 12px;"
     />
     <div v-if="records.length === 0" class="empty">暂无记录</div>
-    <el-table v-else :data="records" border style="margin-bottom: 20px;">
-      <el-table-column prop="date" label="日期" />
-      <el-table-column prop="match" label="对战" align="center" />
-      <el-table-column prop="score" label="比分" align="center" />
-    </el-table>
-    
-    <h3 v-if="records.length > 0">数据统计</h3>
-    <el-table v-if="records.length > 0" :data="playerStats" border :default-sort="{prop: 'totalScore', order: 'descending'}">
-      <el-table-column prop="name" label="队员" align="center" sortable />
-      <el-table-column prop="totalScore" label="总分" align="center" sortable />
-      <el-table-column prop="wins" label="胜场" align="center" sortable />
-      <el-table-column prop="totalGames" label="总场" align="center" sortable />
-      <el-table-column prop="winRate" label="胜率" align="center" sortable>
-        <template slot-scope="scope">
-          {{ (scope.row.winRate * 100).toFixed(1) }}%
-        </template>
-      </el-table-column>
-    </el-table>
+    <template v-else>
+      <h3>数据统计</h3>
+      <el-table :data="playerStats" border :default-sort="{prop: 'totalScore', order: 'descending'}" style="margin-bottom: 20px;">
+        <el-table-column prop="name" label="队员" align="center" sortable fixed="left" width="120" />
+        <el-table-column prop="totalScore" label="总分" align="center" sortable />
+        <el-table-column prop="wins" label="胜场" align="center" sortable />
+        <el-table-column prop="totalGames" label="总场" align="center" sortable />
+        <el-table-column prop="winRate" label="胜率" align="center" sortable>
+          <template slot-scope="scope">
+            {{ (scope.row.winRate * 100).toFixed(1) }}%
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <h3>对战记录</h3>
+      <el-table :data="records" border>
+        <el-table-column prop="date" label="日期" />
+        <el-table-column prop="match" label="对战" align="center" />
+        <el-table-column prop="score" label="比分" align="center" />
+      </el-table>
+    </template>
   </div>
 </template>
 
