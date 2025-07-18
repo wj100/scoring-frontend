@@ -1,50 +1,54 @@
+<!--
+ * @Author: 汪骏
+ * @Date: 2025-07-18 14:45:54
+ * @LastEditors: wangjun
+ * @LastEditTime: 2025-07-18 17:37:01
+ * @Description: 请填写简介
+-->
 <template>
-  <el-row class="tab-bar" justify="space-around" type="flex">
-    <el-col :span="12" @click.native="changeTab('submit')">
-      <div :class="['tab-item', {active: activeTab==='submit'}]">提交比分</div>
-    </el-col>
-    <el-col :span="12" @click.native="changeTab('history')">
-      <div :class="['tab-item', {active: activeTab==='history'}]">历史对战</div>
-    </el-col>
-  </el-row>
+  <div class="tab-bar">
+    <button v-for="tab in tabs" :key="tab.name" :class="{ active: tab.name === selectedTab }" @click="$emit('tab-change', tab.name)">
+      {{ tab.label }}
+    </button>
+  </div>
 </template>
 
 <script>
 export default {
   name: 'TabBar',
   props: {
-    activeTab: {
-      type: String,
-      required: true
-    }
+    selectedTab: String
   },
-  methods: {
-    changeTab(tab) {
-      this.$emit('update:activeTab', tab)
-    }
+  data() {
+    return {
+      tabs: [
+        // { name: 'home', label: '首页' },
+        { name: 'submit', label: '对战' },
+        { name: 'history', label: '战绩' },
+        // { name: 'stats', label: '统计' },
+        { name: 'player', label: '分析' }
+      ]
+    };
   }
-}
+};
 </script>
 
 <style scoped>
 .tab-bar {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 50px;
-  background: #fff;
+  display: flex;
+  justify-content: space-around;
   border-top: 1px solid #eee;
-  z-index: 100;
+  padding: 8px 0;
 }
-.tab-item {
-  line-height: 50px;
-  text-align: center;
+button {
+  background: none;
+  border: none;
   font-size: 16px;
-  color: #888;
+  padding: 8px 16px;
+  cursor: pointer;
 }
-.tab-item.active {
-  color: #409EFF;
+.active {
+  color: #42b983;
   font-weight: bold;
 }
 </style> 

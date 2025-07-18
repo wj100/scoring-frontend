@@ -1,6 +1,6 @@
 <template>
   <div class="history-matches">
-    <h2>历史对战</h2>
+    <!-- <h2>历史对战</h2> -->
     <el-radio-group v-model="rangeType" size="mini" style="margin-bottom: 8px;">
       <el-radio-button label="lastMonth">上月</el-radio-button>
       <el-radio-button label="day">昨日</el-radio-button>

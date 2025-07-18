@@ -2,12 +2,12 @@
  * @Author: 汪骏
  * @Date: 2025-07-18 14:46:23
  * @LastEditors: wangjun
- * @LastEditTime: 2025-07-18 16:19:04
+ * @LastEditTime: 2025-07-18 17:35:47
  * @Description: 请填写简介
 -->
 <template>
   <div class="submit-score">
-    <h2>提交比分</h2>
+    <!-- <h2>提交比分</h2> -->
     <el-form :inline="true" class="match-form">
       <el-form-item label="队员">
         <el-select v-model="playerA" placeholder="选择队员1" style="width: 120px">
