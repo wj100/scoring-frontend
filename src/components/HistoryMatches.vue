@@ -18,10 +18,23 @@
       style="width: 100%; margin-bottom: 12px;"
     />
     <div v-if="records.length === 0" class="empty">暂无记录</div>
-    <el-table v-else :data="records" border>
+    <el-table v-else :data="records" border style="margin-bottom: 20px;">
       <el-table-column prop="date" label="日期" />
       <el-table-column prop="match" label="对战" align="center" />
       <el-table-column prop="score" label="比分" align="center" />
+    </el-table>
+    
+    <h3 v-if="records.length > 0">数据统计</h3>
+    <el-table v-if="records.length > 0" :data="playerStats" border :default-sort="{prop: 'totalScore', order: 'descending'}">
+      <el-table-column prop="name" label="队员" align="center" sortable />
+      <el-table-column prop="totalScore" label="总分" align="center" sortable />
+      <el-table-column prop="wins" label="胜场" align="center" sortable />
+      <el-table-column prop="totalGames" label="总场" align="center" sortable />
+      <el-table-column prop="winRate" label="胜率" align="center" sortable>
+        <template slot-scope="scope">
+          {{ (scope.row.winRate * 100).toFixed(1) }}%
+        </template>
+      </el-table-column>
     </el-table>
   </div>
 </template>
@@ -58,6 +71,45 @@ export default {
       pickerOptions: {
         disabledDate: () => false
       }
+    }
+  },
+  computed: {
+    playerStats() {
+      const stats = {}
+      
+      // 遍历每场比赛记录
+      this.records.forEach(record => {
+        const [player1, player2] = record.match.split('-')
+        const [score1, score2] = record.score.split('-').map(s => parseInt(s.trim(), 10))
+        
+        // 初始化玩家数据
+        if (!stats[player1]) {
+          stats[player1] = { name: player1, totalScore: 0, wins: 0, totalGames: 0 }
+        }
+        if (!stats[player2]) {
+          stats[player2] = { name: player2, totalScore: 0, wins: 0, totalGames: 0 }
+        }
+        
+        // 更新得分
+        stats[player1].totalScore += score1
+        stats[player2].totalScore += score2
+        
+        // 更新胜场和总场数
+        stats[player1].totalGames++
+        stats[player2].totalGames++
+        
+        if (score1 > score2) {
+          stats[player1].wins++
+        } else if (score2 > score1) {
+          stats[player2].wins++
+        }
+      })
+      
+      // 计算胜率并转换为数组
+      return Object.values(stats).map(player => ({
+        ...player,
+        winRate: player.wins / player.totalGames
+      })).sort((a, b) => b.totalScore - a.totalScore) // 按总得分排序
     }
   },
   watch: {
