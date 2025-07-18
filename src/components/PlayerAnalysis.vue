@@ -38,11 +38,22 @@ function getPlayerMatches(data, player) {
   return data.filter(item => item.match.includes(player))
     .map(item => {
       const [player1, player2] = item.match.split('-');
-      console.log(player1, player2);
       const [score1, score2] = item.score.split(' - ').map(Number);
+      
+      // 调整对战队员顺序，得分高的放前面
+      let newMatch;
+      if (score1 > score2) {
+        newMatch = `${player1}-${player2}`;
+      } else if (score2 > score1) {
+        newMatch = `${player2}-${player1}`;
+      } else {
+        newMatch = item.match; // 平局保持原样
+      }
+
       const playerScore = player1 === player ? score1 : score2;
       return {
         ...item,
+        match: newMatch,
         playerScore,
         isWinner: player1 === player ? score1 > score2 : score2 > score1
       };
