@@ -2,9 +2,9 @@
   <div class="history-matches">
     <h2>历史对战</h2>
     <el-radio-group v-model="rangeType" size="mini" style="margin-bottom: 8px;">
+      <el-radio-button label="lastMonth">上月</el-radio-button>
       <el-radio-button label="day">昨日</el-radio-button>
-      <el-radio-button label="week">一周</el-radio-button>
-      <el-radio-button label="month">一月</el-radio-button>
+      <el-radio-button label="month">当月</el-radio-button>
     </el-radio-group>
     <el-date-picker
       v-model="selectedDate"
@@ -31,17 +31,18 @@ import AV from 'leancloud-storage'
 function getDateRange(type) {
   const now = new Date()
   if (type === 'day') {
-    // 返回昨天的日期
+    // 昨日
     const yesterday = new Date(now)
     yesterday.setDate(now.getDate() - 1)
     return [yesterday, yesterday]
-  } else if (type === 'week') {
-    const start = new Date(now)
-    start.setDate(now.getDate() - 6)
-    return [start, now]
+  } else if (type === 'lastMonth') {
+    // 上月
+    const start = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+    const end = new Date(now.getFullYear(), now.getMonth(), 0)
+    return [start, end]
   } else if (type === 'month') {
-    const start = new Date(now)
-    start.setDate(now.getDate() - 29)
+    // 当月
+    const start = new Date(now.getFullYear(), now.getMonth(), 1)
     return [start, now]
   }
   return [now, now]
