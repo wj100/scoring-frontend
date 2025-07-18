@@ -2,10 +2,23 @@
   <div class="player-analysis">
     <!-- <h2>队员分析</h2> -->
     <div class="selector">
-      <label>选择队员：</label>
-      <el-select v-model="selectedPlayer" placeholder="请选择队员" style="width: 160px">
-        <el-option v-for="player in players" :key="player" :label="player" :value="player" />
-      </el-select>
+      <div class="selector-item">
+        <!-- <label>选择日期：</label> -->
+        <el-date-picker
+          v-model="selectedDate"
+          type="date"
+          placeholder="选择日期"
+          :picker-options="{ disabledDate: () => false }"
+          value-format="yyyy-MM-dd"
+          style="width: 160px"
+        />
+      </div>
+      <div class="selector-item">
+        <!-- <label>选择队员：</label> -->
+        <el-select v-model="selectedPlayer" placeholder="请选择队员" style="width: 160px">
+          <el-option v-for="player in players" :key="player" :label="player" :value="player" />
+        </el-select>
+      </div>
     </div>
     <div v-if="selectedPlayer">
       <h3>{{ selectedPlayer }} 画像分析</h3>
@@ -75,11 +88,15 @@ function getPlayerScores(matches, player) {
 export default {
   name: 'PlayerAnalysis',
   data() {
+    // 默认为昨天
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
     return {
       players: [],
       selectedPlayer: '',
       playerMatches: [],
       allMatches: [],
+      selectedDate: yesterday.toISOString().slice(0, 10),
       chart: null,
       loading: false
     };
@@ -88,6 +105,9 @@ export default {
     selectedPlayer(newPlayer) {
       this.playerMatches = getPlayerMatches(this.allMatches, newPlayer);
       this.$nextTick(this.renderChart);
+    },
+    selectedDate() {
+      this.fetchData();
     }
   },
   mounted() {
@@ -97,6 +117,7 @@ export default {
     fetchData() {
       this.loading = true;
       const query = new AV.Query('ScoreRecord');
+      query.equalTo('date', this.selectedDate);
       query.limit(1000);
       query.find().then(list => {
         const matches = list.map(obj => ({
@@ -141,6 +162,14 @@ export default {
 }
 .selector {
   margin-bottom: 16px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+.selector-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .match-list {
   list-style: none;
