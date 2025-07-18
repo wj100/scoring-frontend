@@ -2,7 +2,7 @@
  * @Author: 汪骏
  * @Date: 2025-07-18 14:46:23
  * @LastEditors: wangjun
- * @LastEditTime: 2025-07-18 17:35:47
+ * @LastEditTime: 2025-07-18 18:02:10
  * @Description: 请填写简介
 -->
 <template>
@@ -53,7 +53,7 @@
 
 <script>
 import AV from 'leancloud-storage'
-const PLAYERS = ['建华', '汪骏', '言志', '杭宁', '少爷']
+import { PLAYERS } from '../assets/players'
 export default {
   name: 'SubmitScore',
   data() {

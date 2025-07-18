@@ -16,7 +16,7 @@
 
 <script>
 import AV from 'leancloud-storage'
-const PLAYERS = ['建华', '汪骏', '言志', '杭宁', '少爷']
+import { PLAYERS } from '../assets/players'
 function getDateRange(type) {
   const now = new Date()
   if (type === 'week') {

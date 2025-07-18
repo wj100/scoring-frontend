@@ -3,7 +3,6 @@
     <!-- <h2>队员分析</h2> -->
     <div class="selector">
       <div class="selector-item">
-        <!-- <label>选择日期：</label> -->
         <el-date-picker
           v-model="selectedDate"
           type="date"
@@ -14,18 +13,17 @@
         />
       </div>
       <div class="selector-item">
-        <!-- <label>选择队员：</label> -->
         <el-select v-model="selectedPlayer" placeholder="请选择队员" style="width: 160px">
           <el-option v-for="player in players" :key="player" :label="player" :value="player" />
         </el-select>
       </div>
     </div>
     <div v-if="selectedPlayer">
-      <h3>{{ selectedPlayer }} 画像分析</h3>
+      <!-- <h3>{{ selectedPlayer }} 画像分析</h3> -->
       <div ref="chart" style="width: 100%; height: 400px;display: none;"></div>
       <ul class="match-list">
         <li v-for="item in playerMatches" :key="item.objectId" :class="{ win: item.isWinner }">
-          {{ item.date }} {{ item.match }} 比分: {{ item.score }}
+           {{ item.match }} 比分: {{ item.score }}
           <span class="player-score">(得分: {{ item.playerScore }})</span>
         </li>
       </ul>
@@ -36,16 +34,7 @@
 <script>
 import * as echarts from 'echarts';
 import AV from 'leancloud-storage';
-
-function extractPlayers(data) {
-  const set = new Set();
-  data.forEach(item => {
-    const [a, b] = item.match.split('-');
-    set.add(a);
-    set.add(b);
-  });
-  return Array.from(set);
-}
+import { PLAYERS } from '../assets/players';
 
 function getPlayerMatches(data, player) {
   return data.filter(item => item.match.includes(player))
@@ -92,7 +81,7 @@ export default {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     return {
-      players: [],
+      players: [...PLAYERS],
       selectedPlayer: '',
       playerMatches: [],
       allMatches: [],
@@ -127,7 +116,8 @@ export default {
           score: obj.get('score')
         }));
         this.allMatches = matches;
-        this.players = extractPlayers(matches);
+        // 只用全局PLAYERS
+        this.players = [...PLAYERS];
         this.selectedPlayer = this.players[0] || '';
         this.playerMatches = getPlayerMatches(matches, this.selectedPlayer);
         this.$nextTick(this.renderChart);
