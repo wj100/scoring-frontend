@@ -4,16 +4,17 @@
     <el-radio-group v-model="rangeType" size="mini" style="margin-bottom: 8px;">
       <el-radio-button label="lastMonth">上月</el-radio-button>
       <el-radio-button label="day">昨日</el-radio-button>
+      <el-radio-button label="today">今日</el-radio-button>
       <el-radio-button label="month">当月</el-radio-button>
     </el-radio-group>
     <el-date-picker
       v-model="selectedDate"
-      :type="rangeType === 'day' ? 'date' : 'daterange'"
+      :type="['day', 'today'].includes(rangeType) ? 'date' : 'daterange'"
       :picker-options="pickerOptions"
       :default-value="[new Date(), new Date()]"
       :value-format="'yyyy-MM-dd'"
       :range-separator="'至'"
-      :start-placeholder="rangeType === 'day' ? '选择日期' : '开始日期'"
+      :start-placeholder="['day', 'today'].includes(rangeType) ? '选择日期' : '开始日期'"
       :end-placeholder="'结束日期'"
       style="width: 100%; margin-bottom: 12px;"
     />
@@ -46,7 +47,10 @@
 import AV from 'leancloud-storage'
 function getDateRange(type) {
   const now = new Date()
-  if (type === 'day') {
+  if (type === 'today') {
+    // 今日
+    return [now, now]
+  } else if (type === 'day') {
     // 昨日
     const yesterday = new Date(now)
     yesterday.setDate(now.getDate() - 1)
@@ -66,9 +70,9 @@ function getDateRange(type) {
 export default {
   name: 'HistoryMatches',
   data() {
-    const [, end] = getDateRange('day')
+    const [, end] = getDateRange('today')
     return {
-      rangeType: 'day',
+      rangeType: 'today',
       selectedDate: end.toISOString().slice(0, 10),
       records: [],
       pickerOptions: {
@@ -117,7 +121,7 @@ export default {
   },
   watch: {
     rangeType(val) {
-      if (val === 'day') {
+      if (['day', 'today'].includes(val)) {
         const [, end] = getDateRange(val)
         this.selectedDate = end.toISOString().slice(0, 10)
       } else {

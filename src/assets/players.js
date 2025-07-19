@@ -1,1 +1,1 @@
-export const PLAYERS = ['建华', '汪骏', '言志', '杭宁', '少爷']; 
+export const PLAYERS = ['建华', '汪骏', '言志', '杭宁', '小鲁']; 
