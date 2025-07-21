@@ -40,7 +40,7 @@
       <h4>今日已提交：</h4>
       <el-table :data="submitted" border size="mini" style="width: 100%">
         <el-table-column prop="match" label="对战" />
-        <el-table-column prop="score" label="比分" width="60" align="center" />
+        <el-table-column prop="score" label="比分" width="130" align="center" />
         <el-table-column label="操作" width="60" align="center">
           <template slot-scope="scope">
             <el-button type="text" size="mini" @click="remove(scope.row)">删除</el-button>
