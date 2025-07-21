@@ -123,6 +123,7 @@ export default {
     rangeType(val) {
       if (['day', 'today'].includes(val)) {
         const [, end] = getDateRange(val)
+        console.log(121,end)
         this.selectedDate = end.toISOString().slice(0, 10)
       } else {
         const range = getDateRange(val)
@@ -142,7 +143,25 @@ export default {
       let days = []
       if (this.rangeType === 'day') {
         days = [this.selectedDate]
-      } else if (Array.isArray(this.selectedDate) && this.selectedDate.length === 2) {
+      } else if(this.rangeType==='today'){
+        days = [this.selectedDate]
+      } else if (this.rangeType === 'lastMonth') {
+        const [start, end] = getDateRange('lastMonth')
+        let d = new Date(start)
+        const endDate = new Date(end)
+        while (d <= endDate) {
+          days.push(d.toISOString().slice(0, 10))
+          d.setDate(d.getDate() + 1)
+        }
+      } else if (this.rangeType === 'month') {
+        const [start, end] = getDateRange('month')
+        let d = new Date(start)
+        const endDate = new Date(end)
+        while (d <= endDate) {
+          days.push(d.toISOString().slice(0, 10))
+          d.setDate(d.getDate() + 1)
+        }
+      }else if (Array.isArray(this.selectedDate) && this.selectedDate.length === 2) {
         const [start, end] = this.selectedDate
         let d = new Date(start)
         const endDate = new Date(end)
