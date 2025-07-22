@@ -31,6 +31,12 @@
             {{ (scope.row.winRate * 100).toFixed(1) }}%
           </template>
         </el-table-column>
+        <!-- 场次平均分 -->
+        <el-table-column prop="averageScore" label="均分" align="center" sortable>
+          <template slot-scope="scope">
+            {{ (scope.row.totalScore / scope.row.totalGames).toFixed(1) }}
+          </template>
+        </el-table-column>
       </el-table>
 
       <h3>对战记录</h3>
