@@ -20,13 +20,17 @@ import { PLAYERS } from '../assets/players'
 function getDateRange(type) {
   const now = new Date()
   if (type === 'week') {
-    const start = new Date(now)
-    start.setDate(now.getDate() - 6)
-    return [start, now]
+    // 本周：从7天前 00:00:00 到今天 23:59:59
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6, 0, 0, 0)
+    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59)
+    return [start, end]
   } else if (type === 'month') {
-    const start = new Date(now)
-    start.setDate(now.getDate() - 29)
-    return [start, now]
+    // 本月：从当月1号 00:00:00 到今天 23:59:59
+    const monthStr = String(now.getMonth() + 1).padStart(2, '0')
+    const dayStr = String(now.getDate()).padStart(2, '0')
+    const start = new Date(now.getFullYear() + '-' + monthStr + '-01T00:00:00.000Z')
+    const end = new Date(now.getFullYear() + '-' + monthStr + '-' + dayStr + 'T23:59:59.000Z')
+    return [start, end]
   }
   return [null, null]
 }

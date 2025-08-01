@@ -54,22 +54,35 @@ import AV from 'leancloud-storage'
 function getDateRange(type) {
   const now = new Date()
   if (type === 'today') {
-    // 今日
-    return [now, now]
+    // 今日：从 00:00:00 到 23:59:59
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0)
+    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59)
+    return [start, end]
   } else if (type === 'day') {
-    // 昨日
-    const yesterday = new Date(now)
-    yesterday.setDate(now.getDate() - 1)
-    return [yesterday, yesterday]
+    // 昨日：从 00:00:00 到 23:59:59
+    const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1)
+    const start = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 0, 0, 0)
+    const end = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 23, 59, 59)
+    return [start, end]
   } else if (type === 'lastMonth') {
-    // 上月
-    const start = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-    const end = new Date(now.getFullYear(), now.getMonth(), 0)
+    // 上月：从上个月第1天 00:00:00 到上个月最后一天 23:59:59
+    let lastMonthYear = now.getFullYear()
+    let lastMonth = now.getMonth() - 1
+    if (lastMonth < 0) {
+      lastMonth = 11
+      lastMonthYear--
+    }
+    const monthStr = String(lastMonth + 1).padStart(2, '0')
+    const start = new Date(lastMonthYear + '-' + monthStr + '-01T00:00:00.000Z')
+    const end = new Date(lastMonthYear + '-' + monthStr + '-31T23:59:59.000Z')
     return [start, end]
   } else if (type === 'month') {
-    // 当月
-    const start = new Date(now.getFullYear(), now.getMonth(), 1)
-    return [start, now]
+    // 当月：从当月第1天 00:00:00 到今天 23:59:59
+    const monthStr = String(now.getMonth() + 1).padStart(2, '0')
+    const dayStr = String(now.getDate()).padStart(2, '0')
+    const start = new Date(now.getFullYear() + '-' + monthStr + '-01T00:00:00.000Z')
+    const end = new Date(now.getFullYear() + '-' + monthStr + '-' + dayStr + 'T23:59:59.000Z')
+    return [start, end]
   }
   return [now, now]
 }
@@ -167,7 +180,7 @@ export default {
           days.push(d.toISOString().slice(0, 10))
           d.setDate(d.getDate() + 1)
         }
-      }else if (Array.isArray(this.selectedDate) && this.selectedDate.length === 2) {
+      } else if (Array.isArray(this.selectedDate) && this.selectedDate.length === 2) {
         const [start, end] = this.selectedDate
         let d = new Date(start)
         const endDate = new Date(end)
