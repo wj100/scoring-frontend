@@ -3,13 +3,14 @@
     <!-- <h2>队员分析</h2> -->
     <div class="selector">
       <div class="selector-item">
-        <el-date-picker
-          v-model="selectedDate"
-          type="date"
-          placeholder="选择日期"
-          :picker-options="{ disabledDate: () => false }"
-          value-format="yyyy-MM-dd"
-          style="width: 160px"
+        <van-cell title="日期" :value="selectedDate" @click="showDatePicker = true" />
+        <van-calendar 
+          v-model="showDatePicker" 
+          :default-date="new Date(selectedDate)" 
+          @confirm="onConfirmDate"
+          color="#1989fa"
+          :show-confirm="true"
+          :min-date="minDate"
         />
       </div>
       <div class="selector-item">
@@ -80,6 +81,10 @@ export default {
     // 默认为昨天
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
+    // 设置最小可选日期为一年前
+    const lastYear = new Date();
+    lastYear.setFullYear(lastYear.getFullYear() - 1);
+    
     return {
       players: [...PLAYERS],
       selectedPlayer: '',
@@ -87,7 +92,9 @@ export default {
       allMatches: [],
       selectedDate: yesterday.toISOString().slice(0, 10),
       chart: null,
-      loading: false
+      loading: false,
+      showDatePicker: false,
+      minDate: lastYear // 一年前的今天
     };
   },
   watch: {
@@ -103,6 +110,16 @@ export default {
     this.fetchData();
   },
   methods: {
+    formatDate(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return '';
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    },
+    onConfirmDate(date) {
+      this.showDatePicker = false;
+      this.selectedDate = this.formatDate(date);
+    },
     fetchData() {
       this.loading = true;
       const query = new AV.Query('ScoreRecord');
@@ -178,5 +195,41 @@ export default {
   margin-left: 8px;
   color: #409EFF;
   font-weight: bold;
+}
+
+/* Vant 日期选择器样式 */
+.van-cell {
+  padding: 10px 15px;
+  font-size: 14px;
+  background-color: #f7f8fa;
+  border-radius: 4px;
+  width: 160px;
+}
+.van-cell__title {
+  font-size: 14px;
+  flex: 0 0 30%;
+  max-width: 30%;
+}
+.van-calendar__header-title,
+.van-calendar__month-title {
+  font-size: 16px;
+}
+
+/* 移动端适配 */
+@media screen and (max-width: 768px) {
+  .player-analysis {
+    padding: 16px 8px 60px 8px;
+  }
+  .van-calendar {
+    height: 80vh;
+  }
+  .selector {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+  .selector-item {
+    width: 100%;
+    margin-bottom: 10px;
+  }
 }
 </style> 
