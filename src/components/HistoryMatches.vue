@@ -1,23 +1,37 @@
 <template>
   <div class="history-matches">
     <!-- <h2>历史对战</h2> -->
-    <el-radio-group v-model="rangeType" size="mini" style="margin-bottom: 8px;">
-      <el-radio-button label="lastMonth">上月</el-radio-button>
-      <el-radio-button label="day">昨日</el-radio-button>
-      <el-radio-button label="today">今日</el-radio-button>
-      <el-radio-button label="month">当月</el-radio-button>
-    </el-radio-group>
-    <el-date-picker
-      v-model="selectedDate"
-      :type="['day', 'today'].includes(rangeType) ? 'date' : 'daterange'"
-      :picker-options="pickerOptions"
-      :default-value="[new Date(), new Date()]"
-      :value-format="'yyyy-MM-dd'"
-      :range-separator="'至'"
-      :start-placeholder="['day', 'today'].includes(rangeType) ? '选择日期' : '开始日期'"
-      :end-placeholder="'结束日期'"
-      style="width: 100%; margin-bottom: 12px;"
-    />
+    <van-tabs v-model="rangeType" class="date-radio-tabs">
+      <van-tab name="lastMonth" title="上月"></van-tab>
+      <van-tab name="day" title="昨日"></van-tab>
+      <van-tab name="today" title="今日"></van-tab>
+      <van-tab name="month" title="当月"></van-tab>
+    </van-tabs>
+    <div class="date-picker-container">
+      <template v-if="['day', 'today'].includes(rangeType)">
+        <van-cell title="选择日期" :value="formattedDate" @click="showDatePicker = true" />
+        <van-calendar 
+          v-model="showDatePicker" 
+          :default-date="new Date(selectedDate)" 
+          @confirm="onConfirmDate"
+          color="#1989fa"
+          :show-confirm="true"
+          :min-date="minDate"
+        />
+      </template>
+      <template v-else>
+        <van-cell title="日期范围" :value="formattedDateRange" @click="showDateRangePicker = true" />
+        <van-calendar 
+          v-model="showDateRangePicker" 
+          type="range" 
+          @confirm="onConfirmDateRange"
+          color="#1989fa"
+          :show-confirm="true"
+          :default-date="dateRangeDefaultValue"
+          :min-date="minDate"
+        />
+      </template>
+    </div>
     <div v-if="records.length === 0" class="empty">暂无记录</div>
     <template v-else>
       <h3>数据统计</h3>
@@ -90,16 +104,40 @@ export default {
   name: 'HistoryMatches',
   data() {
     const [, end] = getDateRange('today')
+    // 设置最小可选日期为一年前
+    const lastYear = new Date();
+    lastYear.setFullYear(lastYear.getFullYear() - 1);
+    
     return {
       rangeType: 'today',
       selectedDate: end.toISOString().slice(0, 10),
       records: [],
       pickerOptions: {
         disabledDate: () => false
-      }
+      },
+      showDatePicker: false,
+      showDateRangePicker: false,
+      dateRangeValue: [],
+      minDate: lastYear // 一年前的今天
     }
   },
   computed: {
+    formattedDate() {
+      if (!this.selectedDate) return '请选择日期';
+      return this.formatDate(this.selectedDate);
+    },
+    formattedDateRange() {
+      if (!Array.isArray(this.selectedDate) || this.selectedDate.length !== 2) return '请选择日期范围';
+      return `${this.formatDate(this.selectedDate[0])} 至 ${this.formatDate(this.selectedDate[1])}`;
+    },
+    dateRangeDefaultValue() {
+      if (Array.isArray(this.selectedDate) && this.selectedDate.length === 2) {
+        return [new Date(this.selectedDate[0]), new Date(this.selectedDate[1])];
+      }
+      // 默认值
+      const range = getDateRange(this.rangeType);
+      return [new Date(range[0]), new Date(range[1])];
+    },
     playerStats() {
       const stats = {}
       
@@ -139,24 +177,47 @@ export default {
     }
   },
   watch: {
-    rangeType(val) {
-      // 切换日期选择类型时，重置日期选择
-      const range = getDateRange(val)
-      if (['day', 'today'].includes(val)) {
-        this.selectedDate = range[1].toISOString().slice(0, 10)
-      } else {
-        this.selectedDate = [range[0].toISOString().slice(0, 10), range[1].toISOString().slice(0, 10)]
-      }
-      this.loadRecords()
+    rangeType: {
+      handler(val) {
+        // 切换日期选择类型时，重置日期选择
+        const range = getDateRange(val);
+        if (['day', 'today'].includes(val)) {
+          this.selectedDate = this.formatDate(range[1]);
+        } else {
+          this.selectedDate = [
+            this.formatDate(range[0]), 
+            this.formatDate(range[1])
+          ];
+        }
+        this.loadRecords();
+      },
+      immediate: true
     },
-    selectedDate() {
-      this.loadRecords()
+    selectedDate: {
+      handler() {
+        this.loadRecords();
+      },
+      deep: true
     }
   },
   mounted() {
     this.loadRecords()
   },
   methods: {
+    formatDate(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return '';
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    },
+    onConfirmDate(date) {
+      this.showDatePicker = false;
+      this.selectedDate = this.formatDate(date);
+    },
+    onConfirmDateRange(dates) {
+      this.showDateRangePicker = false;
+      this.selectedDate = dates.map(date => this.formatDate(date));
+    },
     loadRecords() {
       let days = []
       if (['day', 'today'].includes(this.rangeType)) {
@@ -228,5 +289,38 @@ export default {
 }
 .el-table th {
   font-size: 13px;
+}
+
+/* Vant 日期选择器样式 */
+.date-picker-container {
+  margin-bottom: 12px;
+}
+.date-radio-tabs {
+  margin-bottom: 10px;
+}
+.van-cell {
+  padding: 10px 15px;
+  font-size: 14px;
+  background-color: #f7f8fa;
+  border-radius: 4px;
+}
+.van-cell__title {
+  font-size: 14px;
+  flex: 0 0 30%;
+  max-width: 30%;
+}
+.van-calendar__header-title,
+.van-calendar__month-title {
+  font-size: 16px;
+}
+
+/* 移动端适配 */
+@media screen and (max-width: 768px) {
+  .history-matches {
+    padding: 16px 8px 60px 8px;
+  }
+  .van-calendar {
+    height: 80vh;
+  }
 }
 </style> 

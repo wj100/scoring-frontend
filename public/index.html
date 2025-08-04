@@ -3,9 +3,31 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
     <link rel="icon" href="<%= BASE_URL %>image.png">
     <title>龙虎榜</title>
+    <style>
+      /* 移动端基础样式优化 */
+      body {
+        margin: 0;
+        padding: 0;
+        -webkit-text-size-adjust: 100%;
+      }
+      /* 修复日期选择器在移动端的显示问题 */
+      .el-date-editor.el-input {
+        width: 100% !important;
+      }
+      .el-date-editor--daterange {
+        width: 100% !important;
+      }
+      /* 确保移动端下部分元素溢出可以滚动 */
+      @media screen and (max-width: 768px) {
+        .el-picker-panel {
+          max-width: 90vw;
+          left: 5vw !important;
+        }
+      }
+    </style>
   </head>
   <body>
     <noscript>

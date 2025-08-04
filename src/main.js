@@ -8,11 +8,14 @@
 import Vue from 'vue'
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
+import Vant from 'vant'
+import 'vant/lib/index.css'
 import 'lib-flexible/flexible'
 import App from './App.vue'
 import AV from 'leancloud-storage'
 
 Vue.use(ElementUI)
+Vue.use(Vant)
 
 AV.init({
   appId: 'Ou98O5wwi38kkAIZbrujAvJR-gzGzoHsz',
