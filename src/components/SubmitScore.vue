@@ -21,13 +21,15 @@
               @click="showPickerA = true"
               class="player-input"
             />
-            <van-popup v-model="showPickerA" position="bottom" round>
+            <van-popup v-model="showPickerA" position="bottom" round class="player-popup">
               <van-picker
                 show-toolbar
                 title="选择队员"
                 :columns="playersA"
+                :default-index="Math.floor(playersA.length / 2)"
                 @confirm="onConfirmPlayerA"
                 @cancel="showPickerA = false"
+                :visible-item-count="playersA.length < 8 ? playersA.length : 8"
               />
             </van-popup>
           </div>
@@ -43,13 +45,15 @@
               @click="showPickerB = true"
               class="player-input"
             />
-            <van-popup v-model="showPickerB" position="bottom" round>
+            <van-popup v-model="showPickerB" position="bottom" round class="player-popup">
               <van-picker
                 show-toolbar
                 title="选择队员"
                 :columns="playersB"
+                :default-index="Math.floor(playersB.length / 2)"
                 @confirm="onConfirmPlayerB"
                 @cancel="showPickerB = false"
+                :visible-item-count="playersB.length < 8 ? playersB.length : 8"
               />
             </van-popup>
           </div>
@@ -294,6 +298,19 @@ export default {
   line-height: 24px;
 }
 
+/* 队员选择器样式 */
+.player-popup {
+  max-height: 80vh;
+}
+.player-popup .van-picker {
+  max-height: 80vh;
+}
+.player-popup .van-picker-column__item {
+  padding: 8px 0;
+  height: 36px;
+  line-height: 20px;
+}
+
 /* 移动端适配 */
 @media screen and (max-width: 768px) {
   .submit-score {
@@ -330,6 +347,10 @@ export default {
   
   .van-picker {
     max-height: 40vh;
+  }
+  
+  .player-popup .van-picker {
+    max-height: 80vh;
   }
   
   .section-title {

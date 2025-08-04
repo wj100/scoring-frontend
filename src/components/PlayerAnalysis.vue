@@ -14,9 +14,25 @@
         />
       </div>
       <div class="selector-item">
-        <el-select v-model="selectedPlayer" placeholder="请选择队员" style="width: 160px">
-          <el-option v-for="player in players" :key="player" :label="player" :value="player" />
-        </el-select>
+        <van-field
+          readonly
+          :value="selectedPlayer"
+          placeholder="请选择队员"
+          right-icon="arrow-down"
+          @click="showPlayerPicker = true"
+          class="player-input"
+        />
+        <van-popup v-model="showPlayerPicker" position="bottom" round class="player-popup">
+          <van-picker
+            show-toolbar
+            title="选择队员"
+            :columns="players"
+            :default-index="Math.floor(players.length / 2)"
+            @confirm="onConfirmPlayer"
+            @cancel="showPlayerPicker = false"
+            :visible-item-count="players.length < 8 ? players.length : 8"
+          />
+        </van-popup>
       </div>
     </div>
     <div v-if="selectedPlayer">
@@ -94,6 +110,7 @@ export default {
       chart: null,
       loading: false,
       showDatePicker: false,
+      showPlayerPicker: false,
       minDate: lastYear // 一年前的今天
     };
   },
@@ -119,6 +136,10 @@ export default {
     onConfirmDate(date) {
       this.showDatePicker = false;
       this.selectedDate = this.formatDate(date);
+    },
+    onConfirmPlayer(value) {
+      this.showPlayerPicker = false;
+      this.selectedPlayer = value;
     },
     fetchData() {
       this.loading = true;
@@ -177,6 +198,15 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
+  width: 100%;
+}
+.player-input {
+  width: 160px;
+  background-color: #f7f8fa;
+  border-radius: 4px;
+}
+.player-popup {
+  max-height: 80vh;
 }
 .match-list {
   list-style: none;
@@ -215,6 +245,16 @@ export default {
   font-size: 16px;
 }
 
+/* 队员选择器样式 */
+.player-popup .van-picker {
+  max-height: 80vh;
+}
+.player-popup .van-picker-column__item {
+  padding: 8px 0;
+  height: 36px;
+  line-height: 20px;
+}
+
 /* 移动端适配 */
 @media screen and (max-width: 768px) {
   .player-analysis {
@@ -230,6 +270,10 @@ export default {
   .selector-item {
     width: 100%;
     margin-bottom: 10px;
+  }
+  .player-input,
+  .van-cell {
+    width: 100%;
   }
 }
 </style> 
