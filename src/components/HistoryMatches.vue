@@ -140,12 +140,11 @@ export default {
   },
   watch: {
     rangeType(val) {
+      // 切换日期选择类型时，重置日期选择
+      const range = getDateRange(val)
       if (['day', 'today'].includes(val)) {
-        const [, end] = getDateRange(val)
-        console.log(121,end)
-        this.selectedDate = end.toISOString().slice(0, 10)
+        this.selectedDate = range[1].toISOString().slice(0, 10)
       } else {
-        const range = getDateRange(val)
         this.selectedDate = [range[0].toISOString().slice(0, 10), range[1].toISOString().slice(0, 10)]
       }
       this.loadRecords()
@@ -160,28 +159,30 @@ export default {
   methods: {
     loadRecords() {
       let days = []
-      if (this.rangeType === 'day') {
+      if (['day', 'today'].includes(this.rangeType)) {
+        // 单日选择
         days = [this.selectedDate]
-      } else if(this.rangeType==='today'){
-        days = [this.selectedDate]
-      } else if (this.rangeType === 'lastMonth') {
-        const [start, end] = getDateRange('lastMonth')
-        let d = new Date(start)
-        const endDate = new Date(end)
-        while (d <= endDate) {
-          days.push(d.toISOString().slice(0, 10))
-          d.setDate(d.getDate() + 1)
-        }
-      } else if (this.rangeType === 'month') {
-        const [start, end] = getDateRange('month')
-        let d = new Date(start)
-        const endDate = new Date(end)
-        while (d <= endDate) {
-          days.push(d.toISOString().slice(0, 10))
-          d.setDate(d.getDate() + 1)
-        }
       } else if (Array.isArray(this.selectedDate) && this.selectedDate.length === 2) {
+        // 使用用户手动选择的日期范围
         const [start, end] = this.selectedDate
+        let d = new Date(start)
+        const endDate = new Date(end)
+        while (d <= endDate) {
+          days.push(d.toISOString().slice(0, 10))
+          d.setDate(d.getDate() + 1)
+        }
+      } else {
+        // 如果没有选择日期范围，使用默认范围
+        let start, end;
+        if (this.rangeType === 'lastMonth') {
+          [start, end] = getDateRange('lastMonth')
+        } else if (this.rangeType === 'month') {
+          [start, end] = getDateRange('month')
+        } else {
+          // 默认今日
+          [start, end] = [new Date(), new Date()]
+        }
+        
         let d = new Date(start)
         const endDate = new Date(end)
         while (d <= endDate) {
