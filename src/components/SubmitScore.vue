@@ -8,34 +8,81 @@
 <template>
   <div class="submit-score">
     <!-- <h2>提交比分</h2> -->
-    <el-form :inline="true" class="match-form">
-      <el-form-item label="队员">
-        <el-select v-model="playerA" placeholder="选择队员1" style="width: 120px">
-          <el-option v-for="p in players" :key="p" :label="p" :value="p" :disabled="p === playerB" />
-        </el-select>
-      </el-form-item>
-      <span style="margin: 0 8px;">vs</span>
-      <el-form-item >
-        <el-select v-model="playerB" placeholder="选择队员2" style="width: 120px">
-          <el-option v-for="p in players" :key="p" :label="p" :value="p" :disabled="p === playerA" />
-        </el-select>
-      </el-form-item>
+    <div class="match-form">
+      <div class="form-section">
+        <div class="section-title">队员</div>
+        <div class="player-selector">
+          <div class="player-item">
+            <van-field
+              readonly
+              :value="playerA"
+              placeholder="选择队员1"
+              right-icon="arrow-down"
+              @click="showPickerA = true"
+              class="player-input"
+            />
+            <van-popup v-model="showPickerA" position="bottom" round>
+              <van-picker
+                show-toolbar
+                title="选择队员"
+                :columns="playersA"
+                @confirm="onConfirmPlayerA"
+                @cancel="showPickerA = false"
+              />
+            </van-popup>
+          </div>
+          
+          <div class="vs-text">vs</div>
+          
+          <div class="player-item">
+            <van-field
+              readonly
+              :value="playerB"
+              placeholder="选择队员2"
+              right-icon="arrow-down"
+              @click="showPickerB = true"
+              class="player-input"
+            />
+            <van-popup v-model="showPickerB" position="bottom" round>
+              <van-picker
+                show-toolbar
+                title="选择队员"
+                :columns="playersB"
+                @confirm="onConfirmPlayerB"
+                @cancel="showPickerB = false"
+              />
+            </van-popup>
+          </div>
+        </div>
+      </div>
 
-      <div class="score-form-card">
-        <el-form-item label="比分">
-        <el-input-number v-model="scoreA" :min="0" :max="100" :controls="false" style="width: 120px" />
-      </el-form-item>
-      <span style="margin: 0 8px;">vs</span>
-      <el-form-item>
-        <el-input-number v-model="scoreB" :min="0" :max="100" :controls="false" style="width: 120px" />
-      </el-form-item>
-      <div>
-        <el-form-item>
-            <el-button type="primary" size="mini" @click="submit">提交</el-button>
-      </el-form-item>
+      <div class="form-section">
+        <div class="section-title">比分</div>
+        <div class="score-selector">
+          <van-field
+            type="digit"
+            v-model="scoreA"
+            input-align="center"
+            placeholder="队员1"
+            class="score-input"
+          />
+          
+          <div class="vs-text">vs</div>
+          
+          <van-field
+            type="digit"
+            v-model="scoreB"
+            input-align="center"
+            placeholder="队员2"
+            class="score-input"
+          />
+        </div>
+        
+        <div class="submit-btn-container">
+          <van-button type="primary" size="normal" round block @click="submit">提交比分</van-button>
+        </div>
       </div>
-      </div>
-    </el-form>
+    </div>
     <div class="submitted-list">
       <h4>今日已提交：</h4>
       <el-table :data="submitted" border size="mini" style="width: 100%">
@@ -43,7 +90,7 @@
         <el-table-column prop="score" label="比分" width="130" align="center" />
         <el-table-column label="操作" width="60" align="center">
           <template slot-scope="scope">
-            <el-button type="text" size="mini" @click="remove(scope.row)">删除</el-button>
+            <van-button type="danger" size="mini" icon="delete-o" plain @click="remove(scope.row)"></van-button>
           </template>
         </el-table-column>
       </el-table>
@@ -61,40 +108,67 @@ export default {
       players: PLAYERS,
       playerA: '',
       playerB: '',
-      scoreA: 0,
-      scoreB: 0,
-      submitted: []
+      scoreA: '',
+      scoreB: '',
+      submitted: [],
+      showPickerA: false,
+      showPickerB: false
+    }
+  },
+  computed: {
+    playersA() {
+      return this.players.filter(p => p !== this.playerB);
+    },
+    playersB() {
+      return this.players.filter(p => p !== this.playerA);
     }
   },
   mounted() {
     this.loadSubmitted()
   },
   methods: {
+    onConfirmPlayerA(value) {
+      this.playerA = value;
+      this.showPickerA = false;
+    },
+    onConfirmPlayerB(value) {
+      this.playerB = value;
+      this.showPickerB = false;
+    },
     submit() {
       if (!this.playerA || !this.playerB) {
-        this.$message.error('请选择双方队员')
+        this.$toast.fail('请选择双方队员');
         return
       }
       if (this.playerA === this.playerB) {
-        this.$message.error('不能选择同一队员')
+        this.$toast.fail('不能选择同一队员');
         return
       }
-      if (this.scoreA === 0 && this.scoreB === 0) {
-        this.$message.error('比分不能同时为0')
+      
+      // 转换得分为数字
+      const scoreA = parseInt(this.scoreA) || 0;
+      const scoreB = parseInt(this.scoreB) || 0;
+      
+      if (scoreA === 0 && scoreB === 0) {
+        this.$toast.fail('比分不能同时为0');
         return
       }
+      
       const today = new Date().toISOString().slice(0, 10)
       const matchKey = `${this.playerA}-${this.playerB}`
       const ScoreRecord = AV.Object.extend('ScoreRecord')
       const record = new ScoreRecord()
       record.set('date', today)
       record.set('match', matchKey)
-      record.set('score', `${this.scoreA} - ${this.scoreB}`)
+      record.set('score', `${scoreA} - ${scoreB}`)
       record.save().then(() => {
-        this.$message.success(`${this.playerA} vs ${this.playerB} 提交成功: ${this.scoreA} - ${this.scoreB}`)
+        this.$toast.success(`${this.playerA} vs ${this.playerB} 提交成功: ${scoreA} - ${scoreB}`);
+        // 清空表单
+        this.scoreA = '';
+        this.scoreB = '';
         this.loadSubmitted()
       }).catch(err => {
-        this.$message.error('提交失败: ' + err.message)
+        this.$toast.fail('提交失败: ' + err.message);
       })
     },
     loadSubmitted() {
@@ -112,17 +186,18 @@ export default {
       })
     },
     remove(row) {
-      this.$confirm('确定要删除这条比分记录吗？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
+      this.$dialog.confirm({
+        title: '确认删除',
+        message: '确定要删除这条比分记录吗？',
       }).then(() => {
         const obj = AV.Object.createWithoutData('ScoreRecord', row.objectId)
         obj.destroy().then(() => {
-          this.$message.success('删除成功')
+          this.$toast.success('删除成功');
           this.loadSubmitted()
         })
-      })
+      }).catch(() => {
+        // 取消删除
+      });
     }
   }
 }
@@ -135,39 +210,131 @@ export default {
 .match-form {
   margin-bottom: 16px;
   background: #fff;
-  padding: 12px 8px;
+  padding: 15px;
   border-radius: 8px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+}
+
+.form-section {
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: #323233;
+  margin-bottom: 10px;
+  text-align: left;
+}
+
+.player-selector, .score-selector {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  width: 100%;
 }
-.el-form-item {
-  margin-bottom: 0;
-  margin-right: 8px;
+
+.player-item {
+  flex: 1;
 }
-.el-input-number {
-  width: 40px;
+
+.vs-text {
+  padding: 0 10px;
+  color: #969799;
+  font-weight: 500;
 }
-.el-input__inner {
-  padding: 0 2px;
-  text-align: center;
-  font-size: 16px;
+
+.score-form-card {
+  width: 100%;
 }
+
+.submit-btn-container {
+  margin-top: 25px;
+  width: 100%;
+}
+
 .submitted-list {
-  margin-top: 12px;
+  margin-top: 20px;
 }
+
 .el-table .cell {
   font-size: 13px;
   white-space: nowrap;
 }
+
 .el-table th {
   font-size: 13px;
 }
-.score-form-card{
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    margin-top: 10px;
+
+/* Vant 样式定制 */
+.van-field {
+  border-radius: 4px;
+  background-color: #f7f8fa;
+  margin-bottom: 0;
+  padding: 10px 12px;
+}
+
+/* 比分输入框特殊样式 */
+.score-selector .van-field,
+.player-selector .van-field {
+  flex: 1;
+}
+
+.score-input, .player-input {
+  width: 100%; /* 设置固定宽度比例 */
+}
+
+.score-selector .vs-text,
+.player-selector .vs-text {
+  flex: 0 0 auto;
+}
+
+.van-field__control {
+  font-size: 16px;
+  height: 24px;
+  line-height: 24px;
+}
+
+/* 移动端适配 */
+@media screen and (max-width: 768px) {
+  .submit-score {
+    padding: 16px 8px 70px 8px;
+  }
+  
+  .match-form {
+    padding: 15px;
+  }
+  
+  /* 即使在移动端也保持水平布局 */
+  .player-selector,
+  .score-selector {
+    flex-direction: row;
+    flex-wrap: nowrap;
+  }
+  
+  /* vs文本特殊处理 */
+  .vs-text {
+    width: auto;
+    margin: 0 8px;
+    font-size: 14px;
+  }
+  
+  .submit-btn-container {
+    margin-top: 25px;
+  }
+  
+  .van-button--normal {
+    height: 44px;
+    line-height: 42px;
+    font-size: 16px;
+  }
+  
+  .van-picker {
+    max-height: 40vh;
+  }
+  
+  .section-title {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
 }
 </style> 
