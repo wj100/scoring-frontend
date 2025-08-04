@@ -7,22 +7,24 @@
 -->
 <template>
   <div id="app">
+    <div class="page-content">
+      <div v-if="selectedTab === 'home'">
+        <HelloWorld msg="Welcome to Your Vue.js App" />
+      </div>
+      <div v-else-if="selectedTab === 'history'">
+        <HistoryMatches />
+      </div>
+      <div v-else-if="selectedTab === 'stats'">
+        <StatsBoard />
+      </div>
+      <div v-else-if="selectedTab === 'submit'">
+        <SubmitScore />
+      </div>
+      <div v-else-if="selectedTab === 'player'">
+        <PlayerAnalysis />
+      </div>
+    </div>
     <TabBar :selectedTab="selectedTab" @tab-change="selectedTab = $event" />
-    <div v-if="selectedTab === 'home'">
-      <HelloWorld msg="Welcome to Your Vue.js App" />
-    </div>
-    <div v-else-if="selectedTab === 'history'">
-      <HistoryMatches />
-    </div>
-    <div v-else-if="selectedTab === 'stats'">
-      <StatsBoard />
-    </div>
-    <div v-else-if="selectedTab === 'submit'">
-      <SubmitScore />
-    </div>
-    <div v-else-if="selectedTab === 'player'">
-      <PlayerAnalysis />
-    </div>
   </div>
 </template>
 
@@ -59,6 +61,21 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding-bottom: 50px; /* 为底部导航留出空间 */
+}
+
+.page-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 20px; /* 增加额外底部间距 */
+}
+
+/* 确保内容不会被底部导航栏遮挡 */
+.van-tabbar {
+  z-index: 999;
 }
 </style>
