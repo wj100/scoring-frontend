@@ -8,9 +8,10 @@
 <template>
   <div class="tab-bar-container">
     <van-tabbar v-model="activeTab" @change="handleTabChange" fixed route>
-      <van-tabbar-item name="submit" icon="edit">对战</van-tabbar-item>
-      <van-tabbar-item name="history" icon="chart-trending-o">战绩</van-tabbar-item>
-      <van-tabbar-item name="player" icon="user-o">分析</van-tabbar-item>
+      <van-tabbar-item name="submit" icon="edit">单打</van-tabbar-item>
+      <van-tabbar-item name="history" icon="chart-trending-o">单打战绩</van-tabbar-item>
+      <van-tabbar-item name="doubles" icon="friends-o">双打</van-tabbar-item>
+      <van-tabbar-item name="doublesStats" icon="bar-chart-o">双打战绩</van-tabbar-item>
     </van-tabbar>
   </div>
 </template>

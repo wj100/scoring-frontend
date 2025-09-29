@@ -20,8 +20,11 @@
       <div v-else-if="selectedTab === 'submit'">
         <SubmitScore />
       </div>
-      <div v-else-if="selectedTab === 'player'">
-        <PlayerAnalysis />
+      <div v-else-if="selectedTab === 'doubles'">
+        <DoublesScore />
+      </div>
+      <div v-else-if="selectedTab === 'doublesStats'">
+        <DoublesStats />
       </div>
     </div>
     <TabBar :selectedTab="selectedTab" @tab-change="selectedTab = $event" />
@@ -34,7 +37,8 @@ import HelloWorld from './components/HelloWorld.vue';
 import HistoryMatches from './components/HistoryMatches.vue';
 import StatsBoard from './components/StatsBoard.vue';
 import SubmitScore from './components/SubmitScore.vue';
-import PlayerAnalysis from './components/PlayerAnalysis.vue';
+import DoublesScore from './components/DoublesScore.vue';
+import DoublesStats from './components/DoublesStats.vue';
 
 export default {
   name: 'App',
@@ -44,7 +48,8 @@ export default {
     HistoryMatches,
     StatsBoard,
     SubmitScore,
-    PlayerAnalysis
+    DoublesScore,
+    DoublesStats
   },
   data() {
     return {

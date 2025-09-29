@@ -68,7 +68,7 @@ export default {
       if (days) query.containedIn('date', days)
       query.limit(1000)
       query.find().then(list => {
-        // 统计每个队员的胜场、总比分、胜率
+        // 统计每个队员在单打中的胜场、总比分、胜率
         const statMap = {}
         PLAYERS.forEach(p => statMap[p] = { player: p, winCount: 0, scoreSum: 0, total: 0 })
         list.forEach(obj => {
@@ -84,6 +84,7 @@ export default {
           if (sa > sb) statMap[a].winCount++
           else if (sb > sa) statMap[b].winCount++
         })
+        
         // 计算胜率
         const stats = Object.values(statMap).map(s => ({
           ...s,
@@ -92,6 +93,9 @@ export default {
         // 按比分和胜场排名
         stats.sort((a, b) => b.winCount - a.winCount || b.scoreSum - a.scoreSum)
         this.stats = stats
+      }).catch(err => {
+        console.error('查询单打数据失败:', err)
+        this.stats = []
       })
     }
   }

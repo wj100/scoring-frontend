@@ -2,7 +2,7 @@
  * @Author: 汪骏
  * @Date: 2025-07-18 14:46:23
  * @LastEditors: wangjun
- * @LastEditTime: 2025-07-18 18:02:10
+ * @LastEditTime: 2025-09-29 11:04:05
  * @Description: 请填写简介
 -->
 <template>
@@ -198,6 +198,13 @@ export default {
         obj.destroy().then(() => {
           this.$toast.success('删除成功');
           this.loadSubmitted()
+        }).catch(err => {
+          console.error('删除失败:', err)
+          if (err.code === 403) {
+            this.$toast.fail('删除失败：没有权限删除此记录');
+          } else {
+            this.$toast.fail('删除失败：' + err.message);
+          }
         })
       }).catch(() => {
         // 取消删除

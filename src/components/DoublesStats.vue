@@ -1,6 +1,13 @@
+<!--
+ * @Author: 汪骏
+ * @Date: 2025-01-27 10:00:00
+ * @LastEditors: wangjun
+ * @LastEditTime: 2025-01-27 10:00:00
+ * @Description: 双打战绩统计组件
+-->
 <template>
-  <div class="history-matches">
-    <!-- <h2>历史对战</h2> -->
+  <div class="doubles-stats">
+    <!-- <h2>双打战绩</h2> -->
     <van-tabs v-model="rangeType" class="date-radio-tabs">
       <van-tab name="all" title="历史所有"></van-tab>
       <van-tab name="lastMonth" title="上月"></van-tab>
@@ -54,10 +61,14 @@
         </el-table-column>
       </el-table>
 
-      <h3>单打对战记录</h3>
+      <h3>双打对战记录</h3>
       <el-table :data="records" border>
         <el-table-column prop="date" label="日期" />
-        <el-table-column prop="match" label="对战" align="center" />
+        <el-table-column label="对战" align="center">
+          <template slot-scope="scope">
+            {{ formatMatchDisplay(scope.row.match) }}
+          </template>
+        </el-table-column>
         <el-table-column prop="score" label="比分" align="center" />
       </el-table>
     </template>
@@ -66,6 +77,7 @@
 
 <script>
 import AV from 'leancloud-storage'
+
 function getDateRange(type) {
   const now = new Date()
   if (type === 'today') {
@@ -101,8 +113,9 @@ function getDateRange(type) {
   }
   return [now, now]
 }
+
 export default {
-  name: 'HistoryMatches',
+  name: 'DoublesStats',
   data() {
     const [, end] = getDateRange('today')
     // 设置最小可选日期为一年前
@@ -142,32 +155,35 @@ export default {
     playerStats() {
       const stats = {}
       
-      // 遍历每场比赛记录（只处理单打数据）
+      // 遍历每场比赛记录（只处理双打数据）
       this.records.forEach(record => {
-        const [player1, player2] = record.match.split('-')
         const [score1, score2] = record.score.split('-').map(s => parseInt(s.trim(), 10))
+        const [teamA, teamB] = record.match.split('-')
+        const playersA = teamA.split('&')
+        const playersB = teamB.split('&')
         
-        // 初始化玩家数据
-        if (!stats[player1]) {
-          stats[player1] = { name: player1, totalScore: 0, wins: 0, totalGames: 0 }
-        }
-        if (!stats[player2]) {
-          stats[player2] = { name: player2, totalScore: 0, wins: 0, totalGames: 0 }
-        }
+        // 为每个队员统计
+        playersA.forEach(player => {
+          if (!stats[player]) {
+            stats[player] = { name: player, totalScore: 0, wins: 0, totalGames: 0 }
+          }
+          stats[player].totalScore += score1
+          stats[player].totalGames++
+          if (score1 > score2) {
+            stats[player].wins++
+          }
+        })
         
-        // 更新得分
-        stats[player1].totalScore += score1
-        stats[player2].totalScore += score2
-        
-        // 更新胜场和总场数
-        stats[player1].totalGames++
-        stats[player2].totalGames++
-        
-        if (score1 > score2) {
-          stats[player1].wins++
-        } else if (score2 > score1) {
-          stats[player2].wins++
-        }
+        playersB.forEach(player => {
+          if (!stats[player]) {
+            stats[player] = { name: player, totalScore: 0, wins: 0, totalGames: 0 }
+          }
+          stats[player].totalScore += score2
+          stats[player].totalGames++
+          if (score2 > score1) {
+            stats[player].wins++
+          }
+        })
       })
       
       // 计算胜率并转换为数组
@@ -219,6 +235,11 @@ export default {
       this.showDateRangePicker = false;
       this.selectedDate = dates.map(date => this.formatDate(date));
     },
+    formatMatchDisplay(match) {
+      // 将 "杭宁&汪骏-建华&言志" 格式化为 "杭宁&汪骏 vs 建华&言志"
+      const [teamA, teamB] = match.split('-')
+      return `${teamA} vs ${teamB}`
+    },
     loadRecords() {
       let days = []
       if (this.rangeType === 'all') {
@@ -259,16 +280,19 @@ export default {
         this.records = []
         return
       }
-      // LeanCloud 查询单打数据
-      const query = new AV.Query('ScoreRecord')
+      // LeanCloud 查询双打数据
+      const query = new AV.Query('ScoreRecord2')
       if (days) query.containedIn('date', days)
       query.limit(1000)
       query.find().then(list => {
-        this.records = list.map(obj => ({
-          date: obj.get('date'),
-          match: obj.get('match'),
-          score: obj.get('score')
-        }))
+        this.records = list.map(obj => {
+          const match = obj.get('match')
+          return {
+            date: obj.get('date'),
+            match: match, // 保持原始格式用于统计计算
+            score: obj.get('score')
+          }
+        })
       }).catch(err => {
         this.$message.error('查询失败: ' + err.message)
         this.records = []
@@ -279,7 +303,7 @@ export default {
 </script>
 
 <style scoped>
-.history-matches {
+.doubles-stats {
   padding: 16px 8px 60px 8px;
 }
 .empty {
@@ -320,11 +344,11 @@ export default {
 
 /* 移动端适配 */
 @media screen and (max-width: 768px) {
-  .history-matches {
+  .doubles-stats {
     padding: 16px 8px 60px 8px;
   }
   .van-calendar {
     height: 80vh;
   }
 }
-</style> 
+</style>
